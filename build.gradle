@@ -1,83 +1,54 @@
-plugins {
-	id 'fabric-loom' version '1.10-SNAPSHOT'
-	id 'maven-publish'
-}
+package me.contaria.anglesnapserver.mixin;
 
-version = project.mod_version + '+mc' + project.target_version
-group = project.maven_group
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.nbt.NbtCompound;
+import net.minecraft.world.World;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-base {
-	archivesName = project.archives_base_name
-}
+import java.util.UUID;
 
-repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
-	maven {
-		name = "Terraformers"
-		url = "https://maven.terraformersmc.com/"
-	}
-}
+@Mixin(PersistentProjectileEntity.class)
+public class ArrowOwnershipMixin {
+    
+    @Unique
+    private UUID ownerUUID;
 
-dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void onInit(Entity entity, World world, CallbackInfo ci) {
+        if (entity instanceof PlayerEntity player) {
+            this.ownerUUID = player.getUuid();
+        }
+    }
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    @Inject(method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
+        if (ownerUUID != null) {
+            // Store UUID as string since putUuid methods don't exist in this version
+            nbt.putString("OwnerUUID", ownerUUID.toString());
+        }
+    }
 
-	
-}
+    @Inject(method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
+        // Check if the UUID string exists and parse it
+        if (nbt.contains("OwnerUUID", 8)) { // 8 = STRING type
+            try {
+                this.ownerUUID = UUID.fromString(nbt.getString("OwnerUUID"));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid UUID format gracefully
+                this.ownerUUID = null;
+            }
+        }
+    }
 
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
-	}
-}
-
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
-}
-
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
-
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
-}
-
-jar {
-	inputs.property "archivesName", project.base.archivesName
-
-	from("LICENSE") {
-		rename { "${it}_${inputs.properties.archivesName}"}
-	}
-}
-
-// configure the maven publication
-publishing {
-	publications {
-		create("mavenJava", MavenPublication) {
-			artifactId = project.archives_base_name
-			from components.java
-		}
-	}
-
-	// See https://docs.gradle.org/current/userguide/publishing_maven.html for information on how to set up publishing.
-	repositories {
-		// Add repositories to publish to here.
-		// Notice: This block does NOT have the same function as the block in the top level.
-		// The repositories here will be used for publishing your artifact, not for
-		// retrieving dependencies.
-	}
+    @Unique
+    public UUID getOwnerUUID() {
+        return ownerUUID;
+    }
 }
