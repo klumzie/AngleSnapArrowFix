@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "anglesnap",
+  "id": "AngleSnapArrowFix",
   "version": "${version}",
   "name": "AngleSnap",
   "description": "Save and snap to precise angles.",
@@ -8,23 +8,23 @@
     {
       "name": "contaria",
       "contact": {
-        "homepage": "https://github.com/KingContaria/"
+        "homepage": "https://github.com/klumzie/"
       }
     }
   ],
   "contact": {
-    "homepage": "https://modrinth.com/mod/anglesnap",
-    "sources": "https://github.com/KingContaria/anglesnap",
-    "issues": "https://github.com/KingContaria/anglesnap/issues"
+    "homepage": "https://modrinth.com/mod/AngleSnapArrowFix",
+    "sources": "https://github.com/KingContaria/AngleSnapArrowFix",
+    "issues": "https://github.com/klumzie/AngleSnapArrowFix/issues"
   },
   "license": "MIT",
   "environment": "client",
   "entrypoints": {
     "client": [
-      "me.contaria.anglesnap.AngleSnap"
+      "me.contaria.AngleSnapArrowFix.AngleSnapArrowFix"
     ],
     "modmenu": [
-      "me.contaria.anglesnap.ModMenuApiImpl"
+      "me.contaria.AngleSnapArrowFix.ModMenuApiImpl"
     ]
   },
   "custom": {
