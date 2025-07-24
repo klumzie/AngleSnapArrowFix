@@ -5,6 +5,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.server.world.ServerWorld;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,19 +16,19 @@ import java.util.UUID;
 
 @Mixin(PersistentProjectileEntity.class)
 public class ArrowOwnershipMixin {
-    
+
     @Unique
     private UUID ownerUUID;
 
     // Capture owner when arrow is shot by a player
     @Inject(method = "setOwner", at = @At("HEAD"))
-    private void capturePlayerOwner(Entity entity, CallbackInfo ci) {
+    private void capturePlayerOwner(LivingEntity entity, CallbackInfo ci) {
         if (entity instanceof PlayerEntity player) {
             this.ownerUUID = player.getUuid();
         }
     }
 
-    // Alternative: capture from shooter field if setOwner doesn't work
+    // Fallback: capture owner during tick if needed
     @Inject(method = "tick", at = @At("HEAD"))
     private void captureOwnerFromShooter(CallbackInfo ci) {
         if (ownerUUID == null) {
@@ -50,12 +51,26 @@ public class ArrowOwnershipMixin {
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("OwnerUUID")) {
             try {
-                String uuidString = nbt.getString("OwnerUUID").orElse("");
+                String uuidString = nbt.getString("OwnerUUID");
                 if (!uuidString.isEmpty()) {
                     this.ownerUUID = UUID.fromString(uuidString);
+                    // After loading ownerUUID, try to resolve to actual PlayerEntity
+                    restoreOwnerEntity();
                 }
             } catch (IllegalArgumentException e) {
                 this.ownerUUID = null;
+            }
+        }
+    }
+
+    @Unique
+    private void restoreOwnerEntity() {
+        PersistentProjectileEntity arrow = (PersistentProjectileEntity) (Object) this;
+        if (arrow.world instanceof ServerWorld serverWorld && ownerUUID != null) {
+            PlayerEntity player = serverWorld.getPlayerByUuid(ownerUUID);
+            if (player != null) {
+                // Set the arrow's owner to the player found by UUID
+                arrow.setOwner(player);
             }
         }
     }
