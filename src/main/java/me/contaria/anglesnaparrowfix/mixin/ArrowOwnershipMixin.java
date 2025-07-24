@@ -1,9 +1,7 @@
 package me.contaria.anglesnaparrowfix.mixin;
 
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,11 +15,6 @@ public class ArrowOwnershipMixin {
 
     @Unique
     private UUID ownerUUID;
-
-    @Inject(method = "<init>", at = @At("RETURN"))
-    private void onInit(EntityType<?> type, World world, CallbackInfo ci) {
-        // Optional: initialization logic if needed
-    }
 
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
