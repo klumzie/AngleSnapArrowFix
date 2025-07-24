@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "id": "AngleSnapArrowFix",
+  "id": "anglesnaparrowfix",
   "version": "${version}",
   "name": "AngleSnap",
   "description": "Save and snap to precise angles.",
