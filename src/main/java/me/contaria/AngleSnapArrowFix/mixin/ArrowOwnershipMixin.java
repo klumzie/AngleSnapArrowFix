@@ -1,4 +1,4 @@
-package me.contaria.anglesnapserver.mixin;
+package me.contaria.AngleSnapArrowFix.mixin;
 
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.Entity;
@@ -27,22 +27,22 @@ public class ArrowOwnershipMixin {
         }
     }
 
-    @Inject(method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    @Inject(method = "writeCustomDataToTag", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
-            // Store UUID as string since putUuid methods don't exist in this version
             nbt.putString("OwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    @Inject(method = "readCustomDataFromTag", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
-        // Check if the UUID string exists and parse it
-        if (nbt.contains("OwnerUUID", 8)) { // 8 = STRING type
+        if (nbt.contains("OwnerUUID")) {
             try {
-                this.ownerUUID = UUID.fromString(nbt.getString("OwnerUUID"));
+                String uuidString = nbt.getString("OwnerUUID").orElse("");
+                if (!uuidString.isEmpty()) {
+                    this.ownerUUID = UUID.fromString(uuidString);
+                }
             } catch (IllegalArgumentException e) {
-                // Handle invalid UUID format gracefully
                 this.ownerUUID = null;
             }
         }
