@@ -3,6 +3,7 @@ package me.contaria.anglesnaparrowfix.mixin;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
+import net.minecraft.nbt.NbtHelper;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -25,14 +26,14 @@ public abstract class ArrowOwnershipMixin extends net.minecraft.entity.Entity {
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void writeOwnerToNbt(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
-            nbt.putUuid("OwnerUUID", ownerUUID);
+            nbt.put("OwnerUUID", NbtHelper.fromUuid(ownerUUID));
         }
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void readOwnerFromNbt(NbtCompound nbt, CallbackInfo ci) {
-        if (nbt.containsUuid("OwnerUUID")) {
-            this.ownerUUID = nbt.getUuid("OwnerUUID");
+        if (nbt.contains("OwnerUUID")) {
+            this.ownerUUID = NbtHelper.toUuid(nbt.get("OwnerUUID"));
         }
     }
 
