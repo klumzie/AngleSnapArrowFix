@@ -21,24 +21,30 @@ public class ArrowOwnershipMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(Entity entity, World world, CallbackInfo ci) {
-        if (entity instanceof PlayerEntity player) {
+        if (entity instanceof PlayerEntity) {
+            PlayerEntity player = (PlayerEntity) entity;
             this.ownerUUID = player.getUuid();
         }
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
+    @Inject(method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
-            // Fixed: Use putUuidNew instead of putUuid
-            nbt.putUuidNew("OwnerUUID", ownerUUID);
+            // Store UUID as string since putUuid methods don't exist in this version
+            nbt.putString("OwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
+    @Inject(method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
-        // Fixed: Use containsUuid instead of containsUuid and getUuidNew instead of getUuid
-        if (nbt.containsUuid("OwnerUUID")) {
-            this.ownerUUID = nbt.getUuidNew("OwnerUUID");
+        // Check if the UUID string exists and parse it
+        if (nbt.contains("OwnerUUID", 8)) { // 8 = STRING type
+            try {
+                this.ownerUUID = UUID.fromString(nbt.getString("OwnerUUID"));
+            } catch (IllegalArgumentException e) {
+                // Handle invalid UUID format gracefully
+                this.ownerUUID = null;
+            }
         }
     }
 
