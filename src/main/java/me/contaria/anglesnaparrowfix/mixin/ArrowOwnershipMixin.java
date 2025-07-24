@@ -1,57 +1,60 @@
 package me.contaria.anglesnaparrowfix.mixin;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Optional;
 import java.util.UUID;
 
 @Mixin(PersistentProjectileEntity.class)
 public class ArrowOwnershipMixin {
-
+    
     @Unique
     private UUID ownerUUID;
 
-    @Inject(method = "<init>(Lnet/minecraft/entity/EntityType;Lnet/minecraft/world/World;)V", at = @At("RETURN"))
-    private void onInit(EntityType<?> type, World world, CallbackInfo ci) {
-        // ownerUUID will be set when arrow is fired, not here
+    // Capture owner when arrow is shot by a player
+    @Inject(method = "setOwner", at = @At("HEAD"))
+    private void capturePlayerOwner(Entity entity, CallbackInfo ci) {
+        if (entity instanceof PlayerEntity player) {
+            this.ownerUUID = player.getUuid();
+        }
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
+    @Inject(method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
             nbt.putString("OwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
+    @Inject(method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
-        Optional<String> uuidString = nbt.getString("OwnerUUID");
-        uuidString.ifPresent(s -> {
+        if (nbt.contains ("OwnerUUID")) {
             try {
-                this.ownerUUID = UUID.fromString(s);
+                String uuidString = nbt.getString("OwnerUUID");
+                if (!uuidString.isEmpty()) {
+                    this.ownerUUID = UUID.fromString(uuidString);
+                }
             } catch (IllegalArgumentException e) {
                 this.ownerUUID = null;
             }
-        });
-    }
-
-    @Unique
-    public void setOwnerUUID(UUID uuid) {
-        this.ownerUUID = uuid;
+        }
     }
 
     @Unique
     public UUID getOwnerUUID() {
         return this.ownerUUID;
+    }
+
+    @Unique
+    public void setOwnerUUID(UUID uuid) {
+        this.ownerUUID = uuid;
     }
 }
