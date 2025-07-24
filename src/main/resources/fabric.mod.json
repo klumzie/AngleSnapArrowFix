@@ -2,8 +2,8 @@
   "schemaVersion": 1,
   "id": "anglesnaparrowfix",
   "version": "${version}",
-  "name": "AngleSnap",
-  "description": "Save and snap to precise angles.",
+  "name": "AngleSnapArrowFix",
+  "description": "Arrow ownership tracking for AngleSnap mod.",
   "authors": [
     {
       "name": "contaria",
@@ -14,29 +14,13 @@
   ],
   "contact": {
     "homepage": "https://modrinth.com/mod/AngleSnapArrowFix",
-    "sources": "https://github.com/KingContaria/AngleSnapArrowFix",
+    "sources": "https://github.com/klumzie/AngleSnapArrowFix",
     "issues": "https://github.com/klumzie/AngleSnapArrowFix/issues"
   },
   "license": "MIT",
-  "environment": "client",
-  "entrypoints": {
-    "client": [
-      "me.contaria.AngleSnapArrowFix.AngleSnapArrowFix"
-    ],
-    "modmenu": [
-      "me.contaria.AngleSnapArrowFix.ModMenuApiImpl"
-    ]
-  },
-  "custom": {
-    "modmenu": {
-      "links": {
-        "modmenu.discord": "https://discord.gg/B6ZV8SF672",
-        "anglesnap.link.donations": "https://ko-fi.com/contaria"
-      }
-    }
-  },
+  "environment": "*",
   "mixins": [
-    "anglesnap.mixins.json"
+    "anglesnaparrowfix.mixins.json"
   ],
   "depends": {
     "fabricloader": ">=0.16.10",
