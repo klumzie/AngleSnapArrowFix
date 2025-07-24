@@ -27,14 +27,14 @@ public class ArrowOwnershipMixin {
         }
     }
 
-    @Inject(method = "writeCustomDataToTag", at = @At("TAIL"))
+    @Inject(method = "writeCustomDataToTag(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
             nbt.putString("OwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readCustomDataFromTag", at = @At("TAIL"))
+    @Inject(method = "readCustomDataFromTag(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("OwnerUUID")) {
             try {
