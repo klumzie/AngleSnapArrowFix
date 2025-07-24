@@ -27,18 +27,18 @@ public class ArrowOwnershipMixin {
         }
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
+    @Inject(method = "writeNbt", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
             nbt.putString("OwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
+    @Inject(method = "readNbt", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("OwnerUUID")) {
             try {
-                String uuidString = nbt.getString("OwnerUUID");
+                String uuidString = nbt.getString("OwnerUUID").orElse("");
                 if (!uuidString.isEmpty()) {
                     this.ownerUUID = UUID.fromString(uuidString);
                 }
