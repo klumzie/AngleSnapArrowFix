@@ -1,49 +1,60 @@
-package me.contaria.anglesnaparrowfix.mixin;
+plugins {
+	id 'fabric-loom' version '1.10-SNAPSHOT'
+	id 'maven-publish'
+}
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.world.World;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+version = "${project.mod_version}+mc${project.minecraft_version}"
+group = project.maven_group
 
-import java.util.UUID;
+base {
+	archivesName = project.archives_base_name
+}
 
-@Mixin(PersistentProjectileEntity.class)
-public abstract class ArrowOwnershipMixin extends Entity {
+repositories {
+	maven {
+		name = "Terraformers"
+		url = "https://maven.terraformersmc.com/"
+	}
+}
 
-    @Unique
-    private UUID ownerUUID;
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+}
 
-    public ArrowOwnershipMixin(EntityType<?> type, World world) {
-        super(type, world);
-    }
+processResources {
+	inputs.property "version", project.version
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
 
-    @Inject(method = "writeNbt", at = @At("TAIL"))
-    private void onWriteNbt(NbtCompound nbt, CallbackInfo ci) {
-        if (ownerUUID != null) {
-            nbt.putUuid("OwnerUUID", ownerUUID);
-        }
-    }
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 21
+}
 
-    @Inject(method = "readNbt", at = @At("TAIL"))
-    private void onReadNbt(NbtCompound nbt, CallbackInfo ci) {
-        if (nbt.containsUuid("OwnerUUID")) {
-            this.ownerUUID = nbt.getUuid("OwnerUUID");
-        }
-    }
+java {
+	withSourcesJar()
+	sourceCompatibility = JavaVersion.VERSION_21
+	targetCompatibility = JavaVersion.VERSION_21
+}
 
-    @Unique
-    public UUID getOwnerUUID() {
-        return ownerUUID;
-    }
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.archives_base_name}" }
+	}
+}
 
-    @Unique
-    public void setOwnerUUID(UUID ownerUUID) {
-        this.ownerUUID = ownerUUID;
-    }
+publishing {
+	publications {
+		create("mavenJava", MavenPublication) {
+			artifactId = project.archives_base_name
+			from components.java
+		}
+	}
+	repositories {
+		// Add your Maven repo target if needed
+	}
 }
