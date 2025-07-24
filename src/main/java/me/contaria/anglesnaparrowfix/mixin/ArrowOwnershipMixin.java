@@ -27,6 +27,18 @@ public class ArrowOwnershipMixin {
         }
     }
 
+    // Alternative: capture from shooter field if setOwner doesn't work
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void captureOwnerFromShooter(CallbackInfo ci) {
+        if (ownerUUID == null) {
+            PersistentProjectileEntity arrow = (PersistentProjectileEntity) (Object) this;
+            Entity owner = arrow.getOwner();
+            if (owner instanceof PlayerEntity player) {
+                this.ownerUUID = player.getUuid();
+            }
+        }
+    }
+
     @Inject(method = "writeNbt", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
