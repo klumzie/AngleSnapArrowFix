@@ -9,6 +9,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import me.contaria.anglesnaparrowfix.mixin.ArrowOwnershipAccessor;
 
 import java.util.UUID;
 
@@ -36,19 +37,21 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
         }
     }
 
-    @Inject(method = "writeNbt", at = @At("TAIL"))
+    @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/nbt/NbtCompound;", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
             nbt.putString("OwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readNbt", at = @At("TAIL"))
+    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
-        String uuidString = nbt.getString("OwnerUUID");
-        if (!uuidString.isEmpty()) {
+        if (nbt.contains("OwnerUUID")) {
             try {
-                this.ownerUUID = UUID.fromString(uuidString);
+                String uuidString = nbt.getString("OwnerUUID").orElse("");
+                if (!uuidString.isEmpty()) {
+                    this.ownerUUID = UUID.fromString(uuidString);
+                }
             } catch (IllegalArgumentException e) {
                 this.ownerUUID = null;
             }
