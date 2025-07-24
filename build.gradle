@@ -1,4 +1,4 @@
-package me.contaria.anglesnapserver.mixin;
+package me.contaria.AngleSnapArrowFix.mixin;
 
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.Entity;
