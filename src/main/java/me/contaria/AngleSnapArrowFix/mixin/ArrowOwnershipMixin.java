@@ -15,7 +15,7 @@ import java.util.UUID;
 
 @Mixin(PersistentProjectileEntity.class)
 public class ArrowOwnershipMixin {
-
+    
     @Unique
     private UUID ownerUUID;
 
@@ -29,14 +29,16 @@ public class ArrowOwnershipMixin {
     @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
-            nbt.putUuid("OwnerUUID", ownerUUID);
+            // Fixed: Use putUuidNew instead of putUuid
+            nbt.putUuidNew("OwnerUUID", ownerUUID);
         }
     }
 
     @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
+        // Fixed: Use containsUuid instead of containsUuid and getUuidNew instead of getUuid
         if (nbt.containsUuid("OwnerUUID")) {
-            this.ownerUUID = nbt.getUuid("OwnerUUID");
+            this.ownerUUID = nbt.getUuidNew("OwnerUUID");
         }
     }
 
