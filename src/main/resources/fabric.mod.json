@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "anglesnaparrowfix",
   "version": "${version}",
-  "name": "AngleSnapArrowFix",
+  "name": "anglesnaparrowfix",
   "description": "Arrow ownership tracking for AngleSnap mod.",
   "authors": [
     {
