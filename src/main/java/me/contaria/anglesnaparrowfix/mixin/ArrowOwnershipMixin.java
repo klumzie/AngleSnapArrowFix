@@ -1,5 +1,6 @@
 package me.contaria.anglesnaparrowfix.mixin;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -14,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import java.util.UUID;
 
 @Mixin(PersistentProjectileEntity.class)
-public abstract class ArrowOwnershipMixin extends net.minecraft.entity.Entity {
+public abstract class ArrowOwnershipMixin extends Entity {
 
     @Unique
     private UUID ownerUUID;
@@ -23,14 +24,20 @@ public abstract class ArrowOwnershipMixin extends net.minecraft.entity.Entity {
         super(type, world);
     }
 
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
+    @Inject(
+        method = "writeCustomDataToNbt(Lnet/minecraft/nbt/NbtCompound;)V",
+        at = @At("TAIL")
+    )
     private void writeOwnerToNbt(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
             nbt.put("OwnerUUID", NbtHelper.fromUuid(ownerUUID));
         }
     }
 
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
+    @Inject(
+        method = "readCustomDataFromNbt(Lnet/minecraft/nbt/NbtCompound;)V",
+        at = @At("TAIL")
+    )
     private void readOwnerFromNbt(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("OwnerUUID")) {
             this.ownerUUID = NbtHelper.toUuid(nbt.get("OwnerUUID"));
@@ -44,6 +51,6 @@ public abstract class ArrowOwnershipMixin extends net.minecraft.entity.Entity {
 
     @Unique
     public UUID getOwnerUUID() {
-        return ownerUUID;
+        return this.ownerUUID;
     }
 }
