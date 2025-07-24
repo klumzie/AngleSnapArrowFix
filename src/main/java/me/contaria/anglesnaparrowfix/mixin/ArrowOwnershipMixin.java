@@ -1,8 +1,9 @@
 package me.contaria.anglesnaparrowfix.mixin;
 
-import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
@@ -20,21 +21,19 @@ public class ArrowOwnershipMixin {
     @Unique
     private UUID ownerUUID;
 
-    @Inject(method = "<init>(Lnet/minecraft/entity/Entity;Lnet/minecraft/world/World;)V", at = @At("RETURN"))
-    private void onInit(Entity entity, World world, CallbackInfo ci) {
-        if (entity instanceof PlayerEntity player) {
-            this.ownerUUID = player.getUuid();
-        }
+    @Inject(method = "<init>(Lnet/minecraft/entity/EntityType;Lnet/minecraft/world/World;)V", at = @At("RETURN"))
+    private void onInit(EntityType<?> type, World world, CallbackInfo ci) {
+        // ownerUUID will be set when arrow is fired, not here
     }
 
-    @Inject(method = "writeCustomDataToTag(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
             nbt.putString("OwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readCustomDataFromTag(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
         Optional<String> uuidString = nbt.getString("OwnerUUID");
         uuidString.ifPresent(s -> {
@@ -44,6 +43,11 @@ public class ArrowOwnershipMixin {
                 this.ownerUUID = null;
             }
         });
+    }
+
+    @Unique
+    public void setOwnerUUID(UUID uuid) {
+        this.ownerUUID = uuid;
     }
 
     @Unique
