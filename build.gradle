@@ -1,4 +1,4 @@
-package me.contaria.AngleSnapArrowFix.mixin;
+package me.contaria.anglesnapserver.mixin;
 
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.entity.Entity;
@@ -21,7 +21,8 @@ public class ArrowOwnershipMixin {
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onInit(Entity entity, World world, CallbackInfo ci) {
-        if (entity instanceof PlayerEntity player) {
+        if (entity instanceof PlayerEntity) {
+            PlayerEntity player = (PlayerEntity) entity;
             this.ownerUUID = player.getUuid();
         }
     }
