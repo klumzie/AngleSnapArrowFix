@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "me.contaria.anglesnaparrowfix.mixin",
+  "refmap": "anglesnaparrowfix.refmap.json",
+  "mixins": [
+    "ArrowOwnershipMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
