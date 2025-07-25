@@ -18,14 +18,16 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
 
     // The tick injection has been moved to EntityMixin.java
 
-    @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    // FIX: Removed the specific method signature to silence compiler warnings.
+    @Inject(method = "writeNbt", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
             nbt.putString("AngleSnapFixOwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    // FIX: Removed the specific method signature here as well.
+    @Inject(method = "readNbt", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
         try {
             String uuidString = nbt.getString("AngleSnapFixOwnerUUID").orElse("");
