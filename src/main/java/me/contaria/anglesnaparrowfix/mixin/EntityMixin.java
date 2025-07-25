@@ -10,16 +10,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(Entity.class)
 public abstract class EntityMixin {
-
-    // FIX: Added the specific method signature "()V" to the injection target.
-    @Inject(method = "tick()V", at = @At("HEAD"))
+    
+    // Target the correct tick method - Entity.tick() exists and has signature ()V
+    @Inject(method = "tick", at = @At("HEAD"))
     private void onTick(CallbackInfo ci) {
-        // Check if this entity implements our accessor
-        if (this instanceof ArrowOwnershipAccessor accessor) {
-
-            // Also check if the entity is a ProjectileEntity before getting the owner.
-            if ((Object)this instanceof ProjectileEntity projectile) {
-
+        // Cast to Entity to access methods
+        Entity entity = (Entity)(Object)this;
+        
+        // Check if this is a ProjectileEntity
+        if (entity instanceof ProjectileEntity projectile) {
+            // Check if this entity implements our accessor
+            if (this instanceof ArrowOwnershipAccessor accessor) {
                 if (accessor.getOwnerUUID() == null) {
                     Entity owner = projectile.getOwner();
                     if (owner instanceof PlayerEntity player) {
