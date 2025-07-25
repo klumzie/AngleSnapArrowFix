@@ -19,11 +19,11 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
     private UUID ownerUUID;
 
     // Failsafe: capture from shooter field if owner is set by other means
-    // FIX: Added "()V" to the method signature to make the target explicit.
     @Inject(method = "tick()V", at = @At("HEAD"))
     private void captureOwnerFromShooter(CallbackInfo ci) {
         if (ownerUUID == null) {
-            PersistentProjectileEntity arrow = (PersistentProjectileA_PROMPT_RESPONSE_Was_Cut_Off) (Object) this;
+            // FIX: Corrected the class name typo here.
+            PersistentProjectileEntity arrow = (PersistentProjectileEntity) (Object) this;
             Entity owner = arrow.getOwner();
             if (owner instanceof PlayerEntity player) {
                 this.ownerUUID = player.getUuid();
