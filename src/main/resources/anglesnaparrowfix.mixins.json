@@ -4,7 +4,8 @@
   "refmap": "anglesnaparrowfix.refmap.json",
   "mixins": [
     "ArrowOwnershipMixin",
-    "ProjectileEntityMixin"
+    "ProjectileEntityMixin",
+    "EntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1

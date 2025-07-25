@@ -1,7 +1,5 @@
 package me.contaria.anglesnaparrowfix.mixin;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,20 +16,8 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
     @Unique
     private UUID ownerUUID;
 
-    // Failsafe: capture from shooter field if owner is set by other means
-    @Inject(method = "tick()V", at = @At("HEAD"))
-    private void captureOwnerFromShooter(CallbackInfo ci) {
-        if (ownerUUID == null) {
-            // FIX: Corrected the class name typo here.
-            PersistentProjectileEntity arrow = (PersistentProjectileEntity) (Object) this;
-            Entity owner = arrow.getOwner();
-            if (owner instanceof PlayerEntity player) {
-                this.ownerUUID = player.getUuid();
-            }
-        }
-    }
+    // The tick injection has been moved to EntityMixin.java
 
-    // By specifying the method signature, we resolve the compiler warning.
     @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
@@ -39,11 +25,9 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
         }
     }
 
-    // We specify the signature here too and fix the error by handling the Optional<String>.
     @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
         try {
-            // This safely gets the string or an empty one if the tag doesn't exist.
             String uuidString = nbt.getString("AngleSnapFixOwnerUUID").orElse("");
             if (!uuidString.isEmpty()) {
                 this.ownerUUID = UUID.fromString(uuidString);
