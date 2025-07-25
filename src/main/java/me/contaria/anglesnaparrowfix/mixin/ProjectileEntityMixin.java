@@ -4,19 +4,37 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.ProjectileEntity;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ProjectileEntity.class)
-public class ProjectileEntityMixin {
+import java.util.UUID;
 
-    @Inject(method = "setOwner", at = @At("HEAD"))
-    private void capturePlayerOwner(Entity entity, CallbackInfo ci) {
-        // Check if this projectile is one of ours (implements the accessor)
-        // and if the new owner is a player.
-        if (this instanceof ArrowOwnershipAccessor accessor && entity instanceof PlayerEntity player) {
-            accessor.setOwnerUUID(player.getUuid());
+@Mixin(ProjectileEntity.class)
+public abstract class ProjectileEntityMixin implements ArrowOwnershipAccessor {
+    
+    @Unique
+    private UUID anglesnaparrowfix$ownerUUID;
+    
+    @Override
+    public UUID getOwnerUUID() {
+        return this.anglesnaparrowfix$ownerUUID;
+    }
+    
+    @Override
+    public void setOwnerUUID(UUID uuid) {
+        this.anglesnaparrowfix$ownerUUID = uuid;
+    }
+    
+    @Inject(method = "tick", at = @At("HEAD"))
+    private void onTick(CallbackInfo ci) {
+        if (this.anglesnaparrowfix$ownerUUID == null) {
+            ProjectileEntity projectile = (ProjectileEntity)(Object)this;
+            Entity owner = projectile.getOwner();
+            if (owner instanceof PlayerEntity player) {
+                this.anglesnaparrowfix$ownerUUID = player.getUuid();
+            }
         }
     }
 }
