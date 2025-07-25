@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "anglesnaparrowfix",
   "version": "${version}",
-  "name": "anglesnaparrowfix",
+  "name": "AngleSnapArrowFix",
   "description": "Arrow ownership tracking for AngleSnap mod.",
   "authors": [
     {
@@ -13,12 +13,17 @@
     }
   ],
   "contact": {
-    "homepage": "https://modrinth.com/mod/anglesnaparrowfix",
-    "sources": "https://github.com/klumzie/anglesnaparrowfix",
-    "issues": "https://github.com/klumzie/anglesnaparrowfix/issues"
+    "homepage": "https://modrinth.com/mod/AngleSnapArrowFix",
+    "sources": "https://github.com/klumzie/AngleSnapArrowFix",
+    "issues": "https://github.com/klumzie/AngleSnapArrowFix/issues"
   },
   "license": "MIT",
   "environment": "*",
+  "entrypoints": {
+    "main": [
+      "me.contaria.anglesnaparrowfix.AngleSnapArrowFix"
+    ]
+  },
   "mixins": [
     "anglesnaparrowfix.mixins.json"
   ],
