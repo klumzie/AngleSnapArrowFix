@@ -1,4 +1,4 @@
-package me.contaria.anglesnaparrowfix.mixin;
+package me.contaria.anglesnaparrowfix;
 
 import java.util.UUID;
 

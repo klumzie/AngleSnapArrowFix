@@ -8,7 +8,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import me.contaria.anglesnaparrowfix.mixin.ArrowOwnershipAccessor;
+import me.contaria.anglesnaparrowfix.ArrowOwnershipAccessor;
 
 import java.util.UUID;
 
