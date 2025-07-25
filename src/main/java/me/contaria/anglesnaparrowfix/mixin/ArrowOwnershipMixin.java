@@ -8,6 +8,7 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
@@ -43,8 +44,8 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
      * Injects into the method that saves the arrow's data to disk.
      * This ensures our custom UUID field is included in the save data.
      */
-    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
-    private void saveOwnerUUID(NbtCompound nbt, CallbackInfo ci) {
+    @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/nbt/NbtCompound;", at = @At("RETURN"))
+    private void saveOwnerUUID(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> cir) {
         if (this.ownerUUID != null) {
             // Use a unique key to prevent conflicts with other mods or vanilla data.
             nbt.putString("AngleSnapFixOwnerUUID", this.ownerUUID.toString());
@@ -55,12 +56,14 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
      * Injects into the method that reads the arrow's data from disk.
      * This ensures our custom UUID field is loaded back when the arrow is loaded.
      */
-    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
+    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void loadOwnerUUID(NbtCompound nbt, CallbackInfo ci) {
         // Check if the NBT data contains our key.
         if (nbt.contains("AngleSnapFixOwnerUUID")) {
             try {
-                String uuidString = nbt.getString("AngleSnapFixOwnerUUID");
+                // Handle the case where getString might return Optional<String>
+                String uuidString = nbt.contains("AngleSnapFixOwnerUUID") ? 
+                    nbt.getString("AngleSnapFixOwnerUUID") : "";
                 if (!uuidString.isEmpty()) {
                     this.ownerUUID = UUID.fromString(uuidString);
                 }
