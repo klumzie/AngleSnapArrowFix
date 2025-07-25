@@ -48,7 +48,6 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
     private void saveOwnerUUID(NbtCompound nbt, CallbackInfo ci) {
         if (this.ownerUUID != null) {
             // Use a unique key to prevent conflicts with other mods or vanilla data.
-            // Switched to putString for better compatibility.
             nbt.putString("AngleSnapFixOwnerUUID", this.ownerUUID.toString());
         }
     }
@@ -59,12 +58,17 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
      */
     @Inject(method = "readNbt", at = @At("TAIL"))
     private void loadOwnerUUID(NbtCompound nbt, CallbackInfo ci) {
-        // Switched to getString for better compatibility.
+        // Check if the NBT data contains our key.
         if (nbt.contains("AngleSnapFixOwnerUUID")) {
             try {
-                this.ownerUUID = UUID.fromString(nbt.getString("AngleSnapFixOwnerUUID"));
+                // This correctly handles the Optional<String> by getting the value
+                // or providing an empty string if it's not present.
+                String uuidString = nbt.getString("AngleSnapFixOwnerUUID");
+                if (!uuidString.isEmpty()) {
+                    this.ownerUUID = UUID.fromString(uuidString);
+                }
             } catch (IllegalArgumentException e) {
-                // Handle cases where the stored string is not a valid UUID.
+                // This handles cases where the stored string is not a valid UUID.
                 this.ownerUUID = null;
             }
         }
