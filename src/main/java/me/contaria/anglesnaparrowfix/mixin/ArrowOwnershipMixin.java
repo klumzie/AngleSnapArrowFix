@@ -17,7 +17,6 @@ import java.util.UUID;
  */
 @Mixin(PersistentProjectileEntity.class)
 public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
-
     // This adds a new field to the arrow class at runtime.
     @Unique
     private UUID ownerUUID;
@@ -44,7 +43,7 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
      * Injects into the method that saves the arrow's data to disk.
      * This ensures our custom UUID field is included in the save data.
      */
-    @Inject(method = "writeNbt", at = @At("TAIL"))
+    @Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
     private void saveOwnerUUID(NbtCompound nbt, CallbackInfo ci) {
         if (this.ownerUUID != null) {
             // Use a unique key to prevent conflicts with other mods or vanilla data.
@@ -56,13 +55,11 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
      * Injects into the method that reads the arrow's data from disk.
      * This ensures our custom UUID field is loaded back when the arrow is loaded.
      */
-    @Inject(method = "readNbt", at = @At("TAIL"))
+    @Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
     private void loadOwnerUUID(NbtCompound nbt, CallbackInfo ci) {
         // Check if the NBT data contains our key.
         if (nbt.contains("AngleSnapFixOwnerUUID")) {
             try {
-                // This correctly handles the Optional<String> by getting the value
-                // or providing an empty string if it's not present.
                 String uuidString = nbt.getString("AngleSnapFixOwnerUUID");
                 if (!uuidString.isEmpty()) {
                     this.ownerUUID = UUID.fromString(uuidString);
