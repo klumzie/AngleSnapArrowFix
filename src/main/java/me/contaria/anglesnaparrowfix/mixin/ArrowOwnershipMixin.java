@@ -1,7 +1,6 @@
 package me.contaria.anglesnaparrowfix.mixin;
 
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
@@ -15,19 +14,14 @@ import java.util.UUID;
 
 @Mixin(PersistentProjectileEntity.class)
 public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
-    
+
     @Unique
     private UUID ownerUUID;
 
-    // Capture owner when arrow is shot by a player
-    @Inject(method = "setOwner", at = @At("HEAD"))
-    private void capturePlayerOwner(Entity entity, CallbackInfo ci) {
-        if (entity instanceof PlayerEntity player) {
-            this.ownerUUID = player.getUuid();
-        }
-    }
+    // The setOwner injection has been moved to ProjectileEntityMixin.
+    // This class will now receive the UUID via the accessor.
 
-    // Alternative: capture from shooter field if setOwner doesn't work
+    // Failsafe: capture from shooter field if owner is set by other means
     @Inject(method = "tick", at = @At("HEAD"))
     private void captureOwnerFromShooter(CallbackInfo ci) {
         if (ownerUUID == null) {
@@ -39,21 +33,19 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
         }
     }
 
-    @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    @Inject(method = "writeNbt", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
-            nbt.putString("OwnerUUID", ownerUUID.toString());
+            // Use a more specific key to avoid potential conflicts
+            nbt.putString("AngleSnapFixOwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
+    @Inject(method = "readNbt", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
-        if (nbt.contains("OwnerUUID")) {
+        if (nbt.contains("AngleSnapFixOwnerUUID")) {
             try {
-                String uuidString = nbt.getString("OwnerUUID").orElse("");
-                if (!uuidString.isEmpty()) {
-                    this.ownerUUID = UUID.fromString(uuidString);
-                }
+                this.ownerUUID = UUID.fromString(nbt.getString("AngleSnapFixOwnerUUID"));
             } catch (IllegalArgumentException e) {
                 this.ownerUUID = null;
             }

@@ -3,7 +3,8 @@
   "package": "me.contaria.anglesnaparrowfix.mixin",
   "refmap": "anglesnaparrowfix.refmap.json",
   "mixins": [
-    "ArrowOwnershipMixin"
+    "ArrowOwnershipMixin",
+    "ProjectileEntityMixin"
   ],
   "injectors": {
     "defaultRequire": 1
