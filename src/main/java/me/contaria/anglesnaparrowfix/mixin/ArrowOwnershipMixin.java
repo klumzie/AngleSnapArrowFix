@@ -18,9 +18,6 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
     @Unique
     private UUID ownerUUID;
 
-    // The setOwner injection has been moved to ProjectileEntityMixin.
-    // This class will now receive the UUID via the accessor.
-
     // Failsafe: capture from shooter field if owner is set by other means
     @Inject(method = "tick", at = @At("HEAD"))
     private void captureOwnerFromShooter(CallbackInfo ci) {
@@ -33,22 +30,25 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
         }
     }
 
-    @Inject(method = "writeNbt", at = @At("TAIL"))
+    // By specifying the method signature, we resolve the compiler warning.
+    @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
-            // Use a more specific key to avoid potential conflicts
             nbt.putString("AngleSnapFixOwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readNbt", at = @At("TAIL"))
+    // We specify the signature here too and fix the error by handling the Optional<String>.
+    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
-        if (nbt.contains("AngleSnapFixOwnerUUID")) {
-            try {
-                this.ownerUUID = UUID.fromString(nbt.getString("AngleSnapFixOwnerUUID"));
-            } catch (IllegalArgumentException e) {
-                this.ownerUUID = null;
+        try {
+            // This safely gets the string or an empty one if the tag doesn't exist.
+            String uuidString = nbt.getString("AngleSnapFixOwnerUUID").orElse("");
+            if (!uuidString.isEmpty()) {
+                this.ownerUUID = UUID.fromString(uuidString);
             }
+        } catch (IllegalArgumentException e) {
+            this.ownerUUID = null;
         }
     }
 
