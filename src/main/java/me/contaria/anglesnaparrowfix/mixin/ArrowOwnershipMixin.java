@@ -1,5 +1,6 @@
 package me.contaria.anglesnaparrowfix.mixin;
 
+import me.contaria.anglesnaparrowfix.ArrowOwnershipAccessor;
 import net.minecraft.entity.projectile.PersistentProjectileEntity;
 import net.minecraft.nbt.NbtCompound;
 import org.spongepowered.asm.mixin.Mixin;
@@ -10,35 +11,17 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.UUID;
 
+/**
+ * This mixin is the DATA container. It adds the UUID field to arrows
+ * and handles saving and loading that data to disk.
+ */
 @Mixin(PersistentProjectileEntity.class)
 public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
 
     @Unique
     private UUID ownerUUID;
 
-    // The tick injection has been moved to EntityMixin.java
-
-    // FIX: Removed the specific method signature to silence compiler warnings.
-    @Inject(method = "writeNbt", at = @At("TAIL"))
-    private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
-        if (ownerUUID != null) {
-            nbt.putString("AngleSnapFixOwnerUUID", ownerUUID.toString());
-        }
-    }
-
-    // FIX: Removed the specific method signature here as well.
-    @Inject(method = "readNbt", at = @At("TAIL"))
-    private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
-        try {
-            String uuidString = nbt.getString("AngleSnapFixOwnerUUID").orElse("");
-            if (!uuidString.isEmpty()) {
-                this.ownerUUID = UUID.fromString(uuidString);
-            }
-        } catch (IllegalArgumentException e) {
-            this.ownerUUID = null;
-        }
-    }
-
+    // These two methods implement our accessor interface.
     @Override
     public UUID getOwnerUUID() {
         return this.ownerUUID;
@@ -47,5 +30,21 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
     @Override
     public void setOwnerUUID(UUID uuid) {
         this.ownerUUID = uuid;
+    }
+
+    // Injects into the method that saves entity data to disk.
+    @Inject(method = "writeNbt", at = @At("TAIL"))
+    private void saveOwnerUUID(NbtCompound nbt, CallbackInfo ci) {
+        if (this.ownerUUID != null) {
+            nbt.putUuid("AngleSnapFixOwnerUUID", this.ownerUUID);
+        }
+    }
+
+    // Injects into the method that reads entity data from disk.
+    @Inject(method = "readNbt", at = @At("TAIL"))
+    private void loadOwnerUUID(NbtCompound nbt, CallbackInfo ci) {
+        if (nbt.containsUuid("AngleSnapFixOwnerUUID")) {
+            this.ownerUUID = nbt.getUuid("AngleSnapFixOwnerUUID");
+        }
     }
 }
