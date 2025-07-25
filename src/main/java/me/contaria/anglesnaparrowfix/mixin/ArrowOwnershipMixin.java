@@ -44,7 +44,7 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
      * Injects into the method that saves the arrow's data to disk.
      * This ensures our custom UUID field is included in the save data.
      */
-    @Inject(method = "writeNbt", at = @At("RETURN"))
+    @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)Lnet/minecraft/nbt/NbtCompound;", at = @At("TAIL"))
     private void saveOwnerUUID(NbtCompound nbt, CallbackInfoReturnable<NbtCompound> cir) {
         if (this.ownerUUID != null) {
             // Use a unique key to prevent conflicts with other mods or vanilla data.
@@ -56,13 +56,18 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
      * Injects into the method that reads the arrow's data from disk.
      * This ensures our custom UUID field is loaded back when the arrow is loaded.
      */
-    @Inject(method = "readNbt", at = @At("TAIL"))
+    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void loadOwnerUUID(NbtCompound nbt, CallbackInfo ci) {
         // Check if the NBT data contains our key.
         if (nbt.contains("AngleSnapFixOwnerUUID")) {
             try {
-                String uuidString = nbt.getString("AngleSnapFixOwnerUUID");
-                if (!uuidString.isEmpty()) {
+                // Handle the Optional<String> issue by using a different approach
+                String uuidString = null;
+                if (nbt.getType("AngleSnapFixOwnerUUID") == 8) { // STRING_TYPE = 8
+                    uuidString = nbt.getString("AngleSnapFixOwnerUUID");
+                }
+                
+                if (uuidString != null && !uuidString.isEmpty()) {
                     this.ownerUUID = UUID.fromString(uuidString);
                 }
             } catch (IllegalArgumentException e) {
