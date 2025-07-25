@@ -39,14 +39,14 @@ public class ArrowOwnershipMixin implements ArrowOwnershipAccessor {
         }
     }
 
-    @Inject(method = "writeNbt", at = @At("TAIL"))
+    @Inject(method = "writeNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void saveOwner(NbtCompound nbt, CallbackInfo ci) {
         if (ownerUUID != null) {
             nbt.putString("OwnerUUID", ownerUUID.toString());
         }
     }
 
-    @Inject(method = "readNbt", at = @At("TAIL"))
+    @Inject(method = "readNbt(Lnet/minecraft/nbt/NbtCompound;)V", at = @At("TAIL"))
     private void loadOwner(NbtCompound nbt, CallbackInfo ci) {
         if (nbt.contains("OwnerUUID")) {
             try {
