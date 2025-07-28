@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "id": "anglesnaparrowfix",
+  "version": "1.0.0",
+  "name": "AngleSnapArrowFix",
+  "description": "A mod to fix arrow ownership when a player logs out and back in.",
+  "authors": [
+    "contaria"
+  ],
+  "contact": {
+    "sources": "https://github.com/klumzie/AngleSnapArrowFix"
+  },
+  "license": "MIT",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "me.contaria.anglesnaparrowfix.AngleSnapArrowFix"
+    ]
+  },
+  "mixins": [
+    "anglesnaparrowfix.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.16.10",
+    "minecraft": "1.21.6",
+    "java": ">=21",
+    "fabric-api": ">=0.128.0"
+  }
+}
